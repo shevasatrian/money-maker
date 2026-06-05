@@ -1,144 +1,135 @@
-# Deploy `username-api` to Render (free tier)
+# Deploy `username-api` (free, no card required)
 
-This walkthrough takes you from "code on local disk" to "publicly reachable API on the internet" in about 10-15 minutes, using Render's free Docker web-service tier. No credit card required.
-
----
-
-## Why Render
-
-- **Genuinely free tier** — no card on file, no trial expiry. Fly.io tightened its free hobby tier in late 2024 and now requires a card; Render does not.
-- **Native Docker support** — our `Dockerfile` builds and runs as-is.
-- **Blueprint files (`render.yaml`)** — one-click "import a repo, get a service" flow that reads the config from your repo.
-
-Trade-off: Render's free web service **sleeps after 15 minutes of inactivity** and cold-starts in ~30 seconds. Fine for early-stage RapidAPI traffic. Upgrade trigger below.
+This walkthrough takes you from "code on GitHub" to "publicly reachable API on the internet" in about 10 minutes using **Koyeb** — a free Docker hosting platform that requires no credit card.
 
 ---
 
-## Step 1 — Get the repo onto GitHub
+## Why Koyeb (not Render)
 
-From the repo root `D:\Money-maker\`:
+Render now requires a credit card on file even for their free tier (the card is not charged, but it is required for verification during Blueprint provisioning). If your card is declined or you prefer not to enter payment info, Koyeb is the replacement:
+
+- **No credit card required** — free tier is accessible with just an email signup
+- **Native Docker support** — reads your `Dockerfile` directly, no extra config files needed
+- **Always-on free instance** — Koyeb's free tier does not sleep (unlike Render's free tier which sleeps after 15 min inactivity)
+- **Automatic HTTPS** — public URL with TLS included
+
+Free tier limits: 1 app, 512 MB RAM, shared CPU, 1 GB outbound bandwidth/month. More than enough for early RapidAPI traffic.
+
+---
+
+## Step 1 — Sign up for Koyeb
+
+1. Go to **https://www.koyeb.com** and click **Get started for free**.
+2. Sign up with your GitHub account (`shevasatrian`) — no card prompt.
+3. Authorize Koyeb to read your GitHub repos.
+
+---
+
+## Step 2 — Create a new app
+
+1. In the Koyeb dashboard, click **Create App**.
+2. Choose **GitHub** as the deployment source.
+3. Select the `shevasatrian/money-maker` repo.
+4. **Branch:** `master`
+5. **Service directory (root directory):** `username-api`
+
+Koyeb auto-detects the `Dockerfile` inside `username-api/` and selects Docker as the build method.
+
+---
+
+## Step 3 — Configure the service
+
+In the service configuration screen:
+
+| Field | Value |
+|---|---|
+| **Builder** | Dockerfile (auto-detected) |
+| **Run command** | *(leave blank — Dockerfile CMD is used)* |
+| **Port** | `8000` |
+| **Health check path** | `/` |
+| **Instance type** | Free |
+| **Regions** | Pick the one closest to you (or leave default) |
+
+Environment variables — click **Add variable**:
+
+| Key | Value |
+|---|---|
+| `PYTHONUNBUFFERED` | `1` |
+
+Click **Deploy**.
+
+---
+
+## Step 4 — Wait for the build
+
+Koyeb pulls your repo, builds the Docker image, and starts the container. First build takes 3–5 minutes (downloading the Python base image, installing fastapi + uvicorn + httpx).
+
+When the status shows **Healthy**, Koyeb assigns a public URL like:
+
+```
+https://username-availability-api-<random>.koyeb.app
+```
+
+---
+
+## Step 5 — Verify the deployment
 
 ```powershell
-cd D:\Money-maker
-git init
-git add .
-git commit -m "Initial commit: passive-earners docs + username-api"
+curl https://<your-koyeb-url>/
+curl https://<your-koyeb-url>/platforms
+curl https://<your-koyeb-url>/check/torvalds
 ```
 
-Then create a new empty repo on github.com (no README, no license — keep it clean) and push:
+Expected results:
+- `/` — JSON with service name, version, platform count, docs path
+- `/platforms` — `default` (9 platforms) and `opt_in` (11 platforms) lists
+- `/check/torvalds` — 9 platform results, all `taken`
 
-```powershell
-git remote add origin https://github.com/<your-username>/money-maker.git
-git branch -M main
-git push -u origin main
-```
-
-The `.gitignore` at the repo root already excludes `.venv/`, `__pycache__/`, `*.pyc`, and `.env` — you won't accidentally push secrets or a 200 MB venv.
-
----
-
-## Step 2 — Render signup
-
-1. Go to **https://render.com** and sign up with your GitHub account.
-2. Authorize Render to read your repos (you can scope to just `money-maker` if you prefer).
-3. No credit card is required for the free tier.
-
----
-
-## Step 3 — Deploy via Blueprint
-
-The repo includes `render.yaml` at the root. Render's Blueprint feature reads it and provisions everything described.
-
-1. In the Render dashboard: **New → Blueprint**.
-2. Select the `money-maker` repo.
-3. Render parses `render.yaml`, shows you a preview: one web service named `username-availability-api`, free plan, Docker runtime, **root directory `username-api`** (so it builds from the right subdirectory).
-4. Click **Apply**.
-5. Wait ~3-5 minutes for the first build (downloading the Python base image, installing `fastapi` + `uvicorn` + `httpx`).
-
-When the build succeeds, Render shows a status of **Live** and assigns a public URL like:
-
-```
-https://username-availability-api.onrender.com
-```
-
-(Yours will have a unique suffix.)
-
----
-
-## Step 4 — Verify the public deploy
-
-From any terminal:
-
-```powershell
-curl https://<your-render-url>/
-curl https://<your-render-url>/platforms
-curl https://<your-render-url>/check/torvalds
-```
-
-You should see:
-- `/` — JSON with service name, version, platform count, docs path.
-- `/platforms` — `default` (9 platforms) and `opt_in` (11 platforms) lists.
-- `/check/torvalds` — full check across 9 default platforms, 0 unknowns.
-
-If the first call is slow (~30s), that's the cold start. Subsequent calls within 15 minutes are fast.
-
-You can also open `https://<your-render-url>/docs` in a browser — that's the Swagger UI auto-generated by FastAPI.
-
----
-
-## Cold-start caveat
-
-Render's free tier sleeps the service after **15 minutes of inactivity**. The next request takes ~30 seconds to wake it. For a RapidAPI listing in its early discovery phase, this is fine — traffic is low and irregular, and the cold-start hit happens to the first user of each hour, not every user.
-
-It becomes a problem when:
-- Your listing starts converting and you're getting >50 requests/day spread throughout the day.
-- A 30s first-request lag makes RapidAPI subscribers churn.
-
----
-
-## Keeping the service warm (UptimeRobot — free)
-
-Render's free tier sleeps after 15 minutes of inactivity, causing a ~30-second cold-start on the next request. A 30-second hang is the #1 reason early RapidAPI subscribers churn before they convert. Fix it for free with an external pinger:
-
-1. Sign up at **https://uptimerobot.com** (free, no credit card).
-2. Click **Add New Monitor** → type **HTTP(S)**.
-3. Friendly name: `username-api warm`.
-4. URL: `https://<your-render-url>/` (the root endpoint returns JSON in <50 ms — ideal ping target).
-5. Monitoring interval: **5 minutes**.
-6. Click **Create Monitor**.
-
-UptimeRobot's free tier supports 50 monitors at 5-minute intervals. One monitor is all you need here.
-
-Enable email notifications on the monitor — you'll get an alert if the Render service goes down or fails to redeploy after a push.
-
-Alternative: cron-job.org also offers free HTTP pings. UptimeRobot is preferred for its reliability and cleaner UI.
-
----
-
-## Upgrade trigger
-
-When monthly recurring revenue from RapidAPI exceeds **$7/mo**, upgrade to Render's **Starter** plan ($7/mo). The service stops sleeping, cold-starts disappear, and the upgrade pays for itself immediately.
-
-Don't upgrade earlier — at $0 MRR, the $7/mo would be a loss.
+Open `https://<your-koyeb-url>/docs` in a browser for the Swagger UI.
 
 ---
 
 ## Auto-deploy on push
 
-`render.yaml` sets `autoDeploy: true`, so every push to your `main` branch on GitHub triggers Render to rebuild and redeploy. You don't need to touch the Render dashboard for code changes after the initial setup.
+In Koyeb's service settings, enable **Auto-deploy** — every push to `master` on GitHub triggers a rebuild and redeploy automatically.
+
+---
+
+## Keeping the service warm
+
+Koyeb's free tier does not sleep between requests, so cold-starts are not an issue. No pinger needed.
+
+If you want uptime monitoring anyway (to get email alerts on crashes), sign up at **https://uptimerobot.com** (free) and add an HTTP monitor pointing to `https://<your-koyeb-url>/`.
+
+---
+
+## Upgrade trigger
+
+When monthly recurring revenue from RapidAPI exceeds ~$10/mo, consider Koyeb's Starter plan or Render's Starter plan ($7/mo) for a dedicated instance and higher bandwidth limits. Neither upgrade is needed at zero or early revenue.
 
 ---
 
 ## Troubleshooting
 
-**Build fails immediately with "Dockerfile not found":**
-The `rootDir: username-api` setting in `render.yaml` is missing or has a typo. Render is looking for `Dockerfile` at the repo root instead of inside `username-api/`. Fix the YAML and push.
+**Build fails with "Dockerfile not found":**
+Confirm that **Service directory** is set to `username-api` (not the repo root). Koyeb looks for `Dockerfile` inside the service directory.
 
-**Build succeeds but the service won't start (boot loops):**
-Most likely cause: `requirements.txt` is missing one of `fastapi`, `uvicorn[standard]`, or `httpx`. Check `username-api/api/requirements.txt`.
+**Service starts but `/check/<username>` returns all `unknown`:**
+The platform checks are hitting GitHub, GitLab, etc. from Koyeb's shared IP range. This is normal at low traffic. If it worsens, adding a short `time.sleep(0.5)` between batches in `core.py` can help avoid rate limits.
 
-**`/check/<username>` returns all `unknown` for known-real users:**
-The free tier is being rate-limited by the target platforms (GitHub, etc.) because all checks come from one Render IP. This is rare on the free tier but can happen with sustained traffic. The fix is upgrading to a paid plan (Render's paid tiers use a larger IP pool) or accepting some level of `unknown` responses.
+**Koyeb shows "Unhealthy" after deploy:**
+The health check hits `GET /` — confirm the container is listening on port 8000. Check Koyeb's **Runtime logs** tab for the actual error.
 
-**Render shows the service as "Deploy failed" with no useful logs:**
-Open the **Logs** tab in the Render dashboard for the service. Almost always reveals the actual error (missing env var, port mismatch, etc.).
+---
+
+## Render (alternative — requires card verification)
+
+If you later get a working card or want to try Render, the repo already includes a `render.yaml` at the root that configures everything. Steps:
+
+1. Sign up at **https://render.com** with your GitHub account.
+2. **New → Blueprint** → select `shevasatrian/money-maker`.
+3. Render reads `render.yaml`, previews one free Docker web service.
+4. Enter payment info (required even for free tier) → click **Apply**.
+5. Public URL assigned after ~5-minute build.
+
+Render's free tier sleeps after 15 minutes of inactivity (30s cold-start on next request). Set up a UptimeRobot monitor on `https://<render-url>/` at 5-minute intervals to keep it warm.
