@@ -77,7 +77,7 @@ namespace
 **Request:**
 ```bash
 curl --request GET \
-  --url 'https://YOUR-RENDER-URL.onrender.com/check/coolbrand42' \
+  --url 'https://hot-olimpia-sheva-ee26b88b.koyeb.app/check/coolbrand42' \
   --header 'X-RapidAPI-Key: YOUR_RAPIDAPI_KEY' \
   --header 'X-RapidAPI-Host: username-availability-checker.p.rapidapi.com'
 ```
@@ -107,7 +107,7 @@ curl --request GET \
 **Request:**
 ```bash
 curl --request GET \
-  --url 'https://YOUR-RENDER-URL.onrender.com/check/torvalds?platforms=github,gitlab,soundcloud' \
+  --url 'https://hot-olimpia-sheva-ee26b88b.koyeb.app/check/torvalds?platforms=github,gitlab,soundcloud' \
   --header 'X-RapidAPI-Key: YOUR_RAPIDAPI_KEY' \
   --header 'X-RapidAPI-Host: username-availability-checker.p.rapidapi.com'
 ```
@@ -131,7 +131,7 @@ curl --request GET \
 **Request:**
 ```bash
 curl --request GET \
-  --url 'https://YOUR-RENDER-URL.onrender.com/platforms' \
+  --url 'https://hot-olimpia-sheva-ee26b88b.koyeb.app/platforms' \
   --header 'X-RapidAPI-Key: YOUR_RAPIDAPI_KEY' \
   --header 'X-RapidAPI-Host: username-availability-checker.p.rapidapi.com'
 ```
@@ -149,7 +149,7 @@ curl --request GET \
 **Request:**
 ```bash
 curl --request GET \
-  --url 'https://YOUR-RENDER-URL.onrender.com/check/this!!invalid'
+  --url 'https://hot-olimpia-sheva-ee26b88b.koyeb.app/check/this!!invalid'
 ```
 
 **Response (400 Bad Request):**

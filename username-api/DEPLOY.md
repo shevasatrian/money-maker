@@ -64,10 +64,10 @@ Click **Deploy**.
 
 Koyeb pulls your repo, builds the Docker image, and starts the container. First build takes 3–5 minutes (downloading the Python base image, installing fastapi + uvicorn + httpx).
 
-When the status shows **Healthy**, Koyeb assigns a public URL like:
+When the status shows **Healthy**, Koyeb assigns a public URL. Your live URL is:
 
 ```
-https://username-availability-api-<random>.koyeb.app
+https://hot-olimpia-sheva-ee26b88b.koyeb.app
 ```
 
 ---
@@ -75,9 +75,9 @@ https://username-availability-api-<random>.koyeb.app
 ## Step 5 — Verify the deployment
 
 ```powershell
-curl https://<your-koyeb-url>/
-curl https://<your-koyeb-url>/platforms
-curl https://<your-koyeb-url>/check/torvalds
+curl https://hot-olimpia-sheva-ee26b88b.koyeb.app/
+curl https://hot-olimpia-sheva-ee26b88b.koyeb.app/platforms
+curl https://hot-olimpia-sheva-ee26b88b.koyeb.app/check/torvalds
 ```
 
 Expected results:
@@ -85,7 +85,7 @@ Expected results:
 - `/platforms` — `default` (9 platforms) and `opt_in` (11 platforms) lists
 - `/check/torvalds` — 9 platform results, all `taken`
 
-Open `https://<your-koyeb-url>/docs` in a browser for the Swagger UI.
+Open `https://hot-olimpia-sheva-ee26b88b.koyeb.app/docs` in a browser for the Swagger UI.
 
 ---
 
@@ -99,7 +99,7 @@ In Koyeb's service settings, enable **Auto-deploy** — every push to `master` o
 
 Koyeb's free tier does not sleep between requests, so cold-starts are not an issue. No pinger needed.
 
-If you want uptime monitoring anyway (to get email alerts on crashes), sign up at **https://uptimerobot.com** (free) and add an HTTP monitor pointing to `https://<your-koyeb-url>/`.
+If you want uptime monitoring anyway (to get email alerts on crashes), sign up at **https://uptimerobot.com** (free) and add an HTTP monitor pointing to `https://hot-olimpia-sheva-ee26b88b.koyeb.app/`.
 
 ---
 
