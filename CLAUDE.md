@@ -29,14 +29,22 @@ curl http://127.0.0.1:8000/platforms            # default + opt-in lists
 
 ## Deploy
 
-There is no local deploy command. Deployment happens via **Render Blueprint** reading `render.yaml` at the repo root. `render.yaml` sets `rootDir: username-api` so Render builds from the subdirectory. Do not move `render.yaml` inside `username-api/` — Render Blueprints only read `render.yaml` from the **repo root**. See `username-api/DEPLOY.md` for the human walkthrough.
+There is no local deploy command. The live service runs on **Koyeb** (free tier, no card required) at:
+
+```
+https://hot-olimpia-sheva-ee26b88b.koyeb.app
+```
+
+The GitHub repo is `github.com/shevasatrian/money-maker` on branch `master`. Koyeb is configured to auto-deploy from that repo with `workdir: username-api` and the Docker builder. See `username-api/DEPLOY.md` for the full walkthrough and Koyeb API setup details.
+
+`render.yaml` still exists at the repo root as a fallback for Render Blueprint deployment. Do not move it inside `username-api/` — Render Blueprints only read it from the repo root. Render now requires card verification even for free tier; Koyeb does not.
 
 ## Architecture of `username-api/`
 
 Two-file split, intentionally small:
 
 - **`api/core.py`** — pure logic. Defines `Platform` dataclasses in the `PLATFORMS` tuple, the async `check_username()` function, and a small validator. No FastAPI, no HTTP framework dependencies.
-- **`api/main.py`** — thin FastAPI layer. Three endpoints: `/`, `/platforms`, `/check/{username}`. Imports from `core` only.
+- **`api/main.py`** — thin FastAPI layer. Three endpoints: `/`, `/platforms`, `/check/{username}`. Also defines four Pydantic response models (`HealthResponse`, `PlatformsResponse`, `CheckResponse`, `PlatformCheckResult`) that drive the OpenAPI schema RapidAPI imports. Keep these models rich — they are the listing's public documentation.
 
 When the user asks to add a platform, edit `PLATFORMS` in `core.py`. The architecture supports three classification mechanisms per platform, in priority order:
 
@@ -54,7 +62,7 @@ Do not "fix" these by moving them back into the default set without re-verifying
 
 These came from the user up front and override default engineering instincts:
 
-- **$0 hosting** — Render's free tier was chosen over Fly.io because Fly tightened its free tier in late 2024 to require a credit card. Don't suggest paid alternatives unless the user explicitly opens that door.
+- **$0 hosting** — Koyeb's free tier is the current host (no card required). Render now requires card verification even for free tier. Fly.io requires a card too. Don't suggest paid alternatives unless the user explicitly opens that door.
 - **No marketing** — the entire deployment-to-RapidAPI flow exists to substitute marketplace discovery for marketing. Don't suggest social/audience growth strategies.
 - **Daily trickle, not moonshot** — targets are $0.50-$2/day from Track A and $1-$15/day per API from Track B. The user prefers small reliable daily income over big launches.
 
@@ -62,4 +70,4 @@ These constraints are also captured in `C:\Users\User\.claude\projects\D--Money-
 
 ## Adding a second API
 
-The plan calls for adding a second API niche once `username-api` hits ~$5/day on RapidAPI, then a third after that. When the user asks for this, mirror the `username-api/` structure: a sibling directory with its own `api/`, `Dockerfile`, `README.md`, `DEPLOY.md`, `EARNINGS.md`, and a new service entry added to the root `render.yaml`. The strategic plan file lists candidate niches under "Niche directions worth scouting."
+The plan calls for adding a second API niche once `username-api` hits ~$5/day on RapidAPI, then a third after that. When the user asks for this, mirror the `username-api/` structure: a sibling directory with its own `api/`, `Dockerfile`, `README.md`, `DEPLOY.md`, `EARNINGS.md`, and `RAPIDAPI.md`. Add a new service entry to the root `render.yaml` (Render fallback) and deploy the new service on Koyeb as a separate app. The strategic plan file lists candidate niches under "Niche directions worth scouting."
