@@ -174,11 +174,30 @@ Basic (100/day) is enough to integrate and test, but not enough for production t
 
 ---
 
-## Pre-Publish Checklist
+## Publish Checklist (current flow)
 
-- [ ] Replace `YOUR-RENDER-URL` in all curl examples with the actual Render URL
-- [ ] Replace `username-availability-checker` in `X-RapidAPI-Host` with the slug RapidAPI assigns
-- [ ] Test one curl example end-to-end before publishing the listing
-- [ ] Upload a banner image (1200×630 px recommended; dark background, white text works well)
-- [ ] Set categories: Tools (primary), Data, Social
-- [ ] Set visibility to **Public** before clicking Publish
+The fastest path uses the live OpenAPI spec, which now carries the Koyeb base URL
+in its `servers` field — importing it auto-creates the base URL **and** all three
+endpoints in one step.
+
+1. [ ] **Base URL + endpoints (the two blockers):** In the Provider Dashboard, open
+   the API → **Definition / API Specs**. Use **Import from OpenAPI** and point it at:
+   `https://hot-olimpia-sheva-ee26b88b.koyeb.app/openapi.json`
+   This wires the base URL and the `/`, `/platforms`, `/check/{username}` endpoints
+   automatically. (If you created the API via the UI without import, set the base URL
+   to `https://hot-olimpia-sheva-ee26b88b.koyeb.app` and add the three endpoints by hand.)
+2. [ ] **Long description:** paste the Long Description section above into the API's
+   Long Description field (the import fills the short description from the spec).
+3. [ ] **Image:** upload `username-api/assets/logo.png` (500×500, matches RapidAPI's
+   recommended size). `assets/banner.png` (1200×630) is available for socials.
+4. [ ] **Categories:** Tools (primary), Data, Social.
+5. [ ] **Pricing tiers:** under **Plans & Pricing**, create the four tiers from the
+   "Pricing Tier Configuration" table above (Basic free / Pro $5 / Ultra $20 / Mega
+   custom). Without a paid tier there is nothing to earn — this is the revenue step.
+6. [ ] **Smoke-test:** run one example from "Example Requests and Responses" through the
+   RapidAPI playground (it injects your test `X-RapidAPI-Key`) and confirm a 200.
+7. [ ] **Publish:** set visibility to **Public**, then Publish.
+
+> Note: the `X-RapidAPI-Host` in the examples (`username-availability-checker.p.rapidapi.com`)
+> is illustrative — RapidAPI assigns the real host when you publish. Update the examples
+> if the assigned slug differs.

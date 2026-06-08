@@ -85,6 +85,15 @@ app = FastAPI(
         "not available."
     ),
     version="1.0.0",
+    # `servers` makes the OpenAPI spec self-describing: RapidAPI's "Import from
+    # OpenAPI URL" reads this as the base URL and wires every endpoint to it in
+    # one import. Without it, the base URL must be entered by hand in the dashboard.
+    servers=[
+        {
+            "url": "https://hot-olimpia-sheva-ee26b88b.koyeb.app",
+            "description": "Production (Koyeb)",
+        }
+    ],
     contact={
         "name": "API Support",
         "email": "shevasatrian@inquivix.com",
