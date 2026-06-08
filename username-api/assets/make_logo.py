@@ -124,7 +124,41 @@ def make_banner() -> None:
     print("wrote assets/banner.png (1200x630)")
 
 
+def _magnifier(draw: ImageDraw.ImageDraw, cx: int, cy: int, r: int, color) -> None:
+    """A search/magnifying-glass mark: ring + diagonal handle, centered at (cx, cy)."""
+    w = max(r // 4, 6)
+    draw.ellipse([cx - r, cy - r, cx + r, cy + r], outline=color, width=w)
+    h0 = (cx + r * 0.72, cy + r * 0.72)
+    h1 = (cx + r * 1.45, cy + r * 1.45)
+    draw.line([h0, h1], fill=color, width=w + 2)
+
+
+def make_logo_alt() -> None:
+    """Style B: light 'app-tile' look — white field, indigo rounded tile,
+    white @, and a magnifying glass (search) mark instead of the check badge."""
+    S = 500
+    img = _vertical_gradient((S, S), (255, 255, 255), (226, 232, 240))
+    d = ImageDraw.Draw(img)
+
+    # Centered indigo rounded-square app tile.
+    m = 70
+    d.rounded_rectangle([m, m, S - m, S - m], radius=84, fill=BG_TOP)
+
+    # White "@" centered in the tile.
+    at_font = _font(FONT_BOLD, 250)
+    box = d.textbbox((0, 0), "@", font=at_font)
+    aw, ah = box[2] - box[0], box[3] - box[1]
+    d.text(((S - aw) / 2 - box[0], (S - ah) / 2 - box[1] - 18), "@", font=at_font, fill=WHITE)
+
+    # White magnifying glass at lower-right of the tile.
+    _magnifier(d, cx=S - 168, cy=S - 168, r=46, color=WHITE)
+
+    img.save("assets/logo_alt.png")
+    print("wrote assets/logo_alt.png (500x500)")
+
+
 if __name__ == "__main__":
     os.makedirs("assets", exist_ok=True)
     make_logo()
+    make_logo_alt()
     make_banner()

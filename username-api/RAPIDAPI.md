@@ -172,6 +172,48 @@ curl --request GET \
 
 Basic (100/day) is enough to integrate and test, but not enough for production traffic — it nudges real users toward Pro. Pro at $5/mo is under any "needs manager approval" threshold. Ultra's per-request overage rate is lower than Pro's to encourage upward migration rather than throttling.
 
+### RapidAPI pricing form — exact field entries
+
+RapidAPI's **Plans & Pricing** form asks for more than the table above: a quota
+**period**, a **rate limit** (req/sec, abuse protection), a **hard-limit** toggle, and
+the **overage** price. Enter each plan exactly as below. Create them in order; the
+free Basic plan must exist before paid plans can reference the same quota object.
+
+The rate limits matter operationally: one `/check` call fans out to ~9 external HTTP
+GETs, so an unthrottled client can hammer the Koyeb free tier. The per-second caps
+below keep a single key from saturating the instance.
+
+**Basic — Free**
+- Price: `0`
+- Requests quota: `100` per **Day**
+- Rate limit: `2` requests / **second**
+- Hard limit: **ON** (requests beyond quota are rejected, not billed)
+- Overage: none
+
+**Pro — $5.00 / month**
+- Price: `5.00`, recurrence **Monthly**
+- Requests quota: `10000` per **Month**
+- Rate limit: `10` requests / **second**
+- Hard limit: **OFF** (allow overage)
+- Overage: `0.001` USD per request beyond quota
+
+**Ultra — $20.00 / month**
+- Price: `20.00`, recurrence **Monthly**
+- Requests quota: `100000` per **Month**
+- Rate limit: `20` requests / **second**
+- Hard limit: **OFF** (allow overage)
+- Overage: `0.0005` USD per request beyond quota
+
+**Mega — Custom**
+- Price: `Custom` (or set a high flat price, e.g. `99.00`, if RapidAPI requires a number)
+- Requests quota: effectively unlimited (set a very high cap, e.g. `5000000` / Month)
+- Rate limit: `40` requests / **second**
+- Hard limit: **OFF**
+- Overage: contact-provider / negotiated
+
+> Set every plan's visibility to **Public** so it appears on the listing. Leaving a
+> plan Private hides it from subscribers and it cannot generate revenue.
+
 ---
 
 ## Publish Checklist (current flow)
